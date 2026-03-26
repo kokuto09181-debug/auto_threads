@@ -1,0 +1,35 @@
+name: Refresh Threads Token
+
+on:
+  schedule:
+    # 50日ごとに実行（毎月1日と15日 = 実質約15日ごとだが安全側に倒す）
+    - cron: '0 1 1,15 * *'   # 毎月1日・15日 10:00 JST
+  workflow_dispatch: {}
+
+permissions:
+  # GitHub Secrets を更新するために必要
+  actions: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Refresh token and update Secret
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: python -m src.token_refresh
