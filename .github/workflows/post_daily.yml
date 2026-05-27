@@ -1,0 +1,28 @@
+name: Daily Threads Post
+
+on:
+  schedule:
+    - cron: '0 22 * * *'   # 毎日 22:00 UTC = 翌07:00 JST
+  workflow_dispatch: {}     # 手動実行ボタンも有効
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Post to Threads
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+        run: python post_scheduled.py
