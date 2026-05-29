@@ -21,6 +21,8 @@ class ThreadsClient:
         url = f"{THREADS_API_BASE}/{path}"
         d = {"access_token": self.access_token, **(data or {})}
         resp = requests.post(url, data=d, timeout=30)
+        if not resp.ok:
+            print(f"[ERROR] POST {url} -> {resp.status_code}: {resp.text}")
         resp.raise_for_status()
         return resp.json()
 
